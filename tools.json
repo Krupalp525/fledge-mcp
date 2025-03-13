@@ -1,0 +1,18 @@
+[
+  {"name": "get_sensor_data", "description": "Fetch sensor data from Fledge", "parameters": {"sensor_id": {"type": "string"}, "time_range": {"type": "string", "optional": true}, "limit": {"type": "integer", "optional": true}}},
+  {"name": "list_sensors", "description": "List all sensors in Fledge", "parameters": {}},
+  {"name": "ingest_test_data", "description": "Ingest test data into Fledge", "parameters": {"sensor_id": {"type": "string"}, "value": {"type": "number"}, "count": {"type": "integer", "optional": true}}},
+  {"name": "get_service_status", "description": "Get Fledge service status", "parameters": {}},
+  {"name": "start_stop_service", "description": "Start or stop a Fledge service", "parameters": {"service_type": {"type": "string"}, "action": {"type": "string"}}},
+  {"name": "update_config", "description": "Update Fledge configuration", "parameters": {"config_key": {"type": "string"}, "value": {"type": "string"}}},
+  {"name": "generate_ui_component", "description": "Generate a UI component", "parameters": {"component_type": {"type": "string"}, "sensor_id": {"type": "string", "optional": true}, "framework": {"type": "string", "optional": true}}},
+  {"name": "fetch_sample_frontend", "description": "Fetch a sample frontend template", "parameters": {"framework": {"type": "string", "optional": true}}},
+  {"name": "subscribe_to_sensor", "description": "Subscribe to sensor updates", "parameters": {"sensor_id": {"type": "string"}, "interval": {"type": "integer", "optional": true}}},
+  {"name": "get_latest_reading", "description": "Get the latest sensor reading", "parameters": {"sensor_id": {"type": "string"}}},
+  {"name": "validate_api_connection", "description": "Validate Fledge API connection", "parameters": {}},
+  {"name": "simulate_frontend_request", "description": "Simulate a frontend API request", "parameters": {"endpoint": {"type": "string"}, "method": {"type": "string", "optional": true}, "payload": {"type": "object", "optional": true}}},
+  {"name": "get_api_schema", "description": "Get Fledge API schema", "parameters": {}},
+  {"name": "list_plugins", "description": "List Fledge plugins", "parameters": {}},
+  {"name": "suggest_ui_improvements", "description": "Suggest UI improvements", "parameters": {"code": {"type": "string"}}},
+  {"name": "generate_mock_data", "description": "Generate mock sensor data", "parameters": {"sensor_id": {"type": "string", "optional": true}, "count": {"type": "integer", "optional": true}}}
+] 
