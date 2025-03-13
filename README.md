@@ -12,7 +12,7 @@ This is a Model Context Protocol (MCP) server that connects Fledge functionality
 
 1. Clone this repository:
 ```
-git clone https://github.com/yourusername/fledge-mcp.git
+git clone https://github.com/Krupalp525/fledge-mcp.git
 cd fledge-mcp
 ```
 
