@@ -13,6 +13,9 @@ import logging
 import argparse
 import json
 from pathlib import Path
+import http.server
+import socketserver
+import threading
 
 import websockets
 
@@ -159,21 +162,38 @@ async def handle_websocket(websocket, path, fledge_api=DEFAULT_FLEDGE_API, tools
     except websockets.exceptions.ConnectionClosed:
         logger.info("Client disconnected")
 
-async def health_check(request_path):
-    """Handle health check requests."""
-    if request_path == "/health":
-        return {"status": "ok", "message": "Fledge MCP Server is running"}
-    return None
-
-async def handle_http_request(path, headers=None):
-    """Handle HTTP requests for health checks and documentation."""
-    health_response = await health_check(path)
-    if health_response:
-        return health_response
+class HealthCheckHandler(http.server.BaseHTTPRequestHandler):
+    """HTTP handler for health check endpoint."""
     
-    return {"error": "Not found", "status": 404}
+    def do_GET(self):
+        """Handle GET requests."""
+        if self.path == "/health":
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json')
+            self.end_headers()
+            response = json.dumps({"status": "ok", "message": "Fledge MCP Server is running"})
+            self.wfile.write(response.encode('utf-8'))
+        else:
+            self.send_response(404)
+            self.send_header('Content-Type', 'application/json')
+            self.end_headers()
+            response = json.dumps({"error": "Not found", "status": 404})
+            self.wfile.write(response.encode('utf-8'))
+    
+    def log_message(self, format, *args):
+        """Override to use our logger."""
+        logger.info("%s - - [%s] %s" % (self.address_string(), self.log_date_time_string(), format%args))
 
-async def main(port=DEFAULT_PORT, fledge_api=DEFAULT_FLEDGE_API, tools_file=DEFAULT_TOOLS_FILE, api_key=None):
+def start_http_server(port=8083):
+    """Start HTTP server for health checks."""
+    handler = HealthCheckHandler
+    httpd = socketserver.TCPServer(("", port), handler)
+    logger.info(f"Starting HTTP server for health checks on port {port}")
+    http_thread = threading.Thread(target=httpd.serve_forever, daemon=True)
+    http_thread.start()
+    return httpd
+
+async def main(port=DEFAULT_PORT, fledge_api=DEFAULT_FLEDGE_API, tools_file=DEFAULT_TOOLS_FILE, api_key=None, http_port=8083):
     """Start the WebSocket server."""
     logger.info(f"Starting Fledge MCP Server on port {port}...")
     logger.info(f"Using Fledge API: {fledge_api}")
@@ -181,6 +201,9 @@ async def main(port=DEFAULT_PORT, fledge_api=DEFAULT_FLEDGE_API, tools_file=DEFA
     
     if api_key:
         logger.info("API key authentication enabled")
+    
+    # Start HTTP server for health checks
+    http_server = start_http_server(http_port)
     
     # Initialize the server
     server = await websockets.serve(
@@ -190,12 +213,19 @@ async def main(port=DEFAULT_PORT, fledge_api=DEFAULT_FLEDGE_API, tools_file=DEFA
     )
     
     logger.info("Server started successfully!")
-    await server.wait_closed()
+    
+    try:
+        await server.wait_closed()
+    finally:
+        # Shutdown HTTP server on exit
+        logger.info("Shutting down HTTP server")
+        http_server.shutdown()
 
 def parse_arguments():
     """Parse command line arguments."""
     parser = argparse.ArgumentParser(description="Fledge MCP Server")
     parser.add_argument("--port", type=int, default=DEFAULT_PORT, help="Port to listen on")
+    parser.add_argument("--http-port", type=int, default=8083, help="HTTP port for health checks")
     parser.add_argument("--fledge-api", type=str, default=DEFAULT_FLEDGE_API, help="Fledge API URL")
     parser.add_argument("--tools-file", type=str, default=DEFAULT_TOOLS_FILE, help="Path to tools JSON file")
     parser.add_argument("--api-key", type=str, help="API key for authentication")
@@ -215,9 +245,10 @@ if __name__ == "__main__":
     
     # Use environment variables if not provided as arguments
     port = int(os.getenv("PORT", args.port))
+    http_port = int(os.getenv("HTTP_PORT", args.http_port))
     fledge_api = os.getenv("FLEDGE_API_URL", args.fledge_api)
     tools_file = os.getenv("TOOLS_FILE", args.tools_file)
     api_key = os.getenv("API_KEY", args.api_key)
     
     # Start the server
-    asyncio.run(main(port, fledge_api, tools_file, api_key)) 
+    asyncio.run(main(port, fledge_api, tools_file, api_key, http_port)) 

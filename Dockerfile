@@ -11,10 +11,12 @@ COPY . .
 
 # Set environment variables
 ENV PORT=8082
+ENV HTTP_PORT=8083
 ENV PYTHONUNBUFFERED=1
 
-# Expose the port
+# Expose the ports for WebSocket and HTTP
 EXPOSE 8082
+EXPOSE 8083
 
 # Run the server
 CMD ["python", "-m", "fledge_mcp.main"] 

@@ -5,16 +5,17 @@ description: Fledge Model Context Protocol (MCP) Server for Cursor AI integratio
 # Build configuration
 build:
   dockerfile: Dockerfile
-  context: .
-  mainModule: fledge_mcp.main
 
 # Runtime configuration
 runtime:
+  # Using the Python websockets package
   type: websocket
   port: 8082
-  protocol: mcp
-  timeout: 300
-  entryPoint: fledge_mcp.main:main
+
+# Entry point configuration
+entrypoint:
+  module: fledge_mcp.main
+  function: main
 
 # Environment variables
 env:
@@ -29,6 +30,10 @@ env:
     description: Path to tools JSON file
     required: false
     default: fledge_mcp/smithery.json
+  - name: HTTP_PORT
+    description: HTTP port for health checks
+    required: false
+    default: "8083"
   - name: LOG_LEVEL
     description: Logging level
     required: false
@@ -39,7 +44,8 @@ env:
     default: "1"
 
 # Health check configuration
-health:
+healthCheck:
+  port: 8083
   path: /health
   interval: 30s
   timeout: 5s
@@ -47,19 +53,24 @@ health:
 
 # Resource limits
 resources:
-  cpu: 1
   memory: 512Mi
+  cpu: 1000m
 
-# Scaling configuration
-scaling:
-  min: 1
-  max: 3
-  target_cpu_utilization: 75
-
-# MCP Server configuration
+# MCP configuration
 mcp:
+  # Tools are defined in the smithery.json file
+  toolsPath: fledge_mcp/smithery.json
+  
+  # Initialize method configuration
   initialize:
-    enabled: true
+    serverInfo:
+      name: fledge-mcp
+      version: 1.0.0
+      description: Fledge Model Context Protocol (MCP) Server
+      vendor: Fledge
+      capabilities:
+        tools: true
+        streaming: true
     configSchema:
       type: object
       properties:
@@ -67,8 +78,6 @@ mcp:
           type: string
           description: Fledge API URL
           default: http://localhost:8081/fledge
-  tools:
-    source: fledge_mcp/smithery.json
 
 # Logging configuration
 logging:
