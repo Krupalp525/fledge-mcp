@@ -1,67 +1,26 @@
+version: 1
 name: fledge-mcp
-version: 1.0.0
 description: Fledge Model Context Protocol (MCP) Server for Cursor AI integration
 
-# Build configuration
-build:
-  dockerfile: Dockerfile
+# Main entry point
+module: fledge_mcp.main
+function: main
 
-# Runtime configuration
-runtime:
-  # Using the Python websockets package
-  type: websocket
-  port: 8082
-
-# Entry point configuration
-entrypoint:
-  module: fledge_mcp.main
-  function: main
-
-# Environment variables
-env:
-  - name: FLEDGE_API_URL
-    description: Fledge API endpoint URL
-    required: true
-    default: http://localhost:8081/fledge
-  - name: API_KEY
-    description: API key for secure mode
-    required: false
-  - name: TOOLS_FILE
-    description: Path to tools JSON file
-    required: false
-    default: fledge_mcp/smithery.json
-  - name: HTTP_PORT
-    description: HTTP port for health checks
-    required: false
-    default: "8083"
-  - name: LOG_LEVEL
-    description: Logging level
-    required: false
-    default: INFO
-  - name: PYTHONUNBUFFERED
-    description: Unbuffer Python output
-    required: false
-    default: "1"
-
-# Health check configuration
+# Port configuration
+port: 8082
 healthCheck:
   port: 8083
   path: /health
-  interval: 30s
-  timeout: 5s
-  retries: 3
 
-# Resource limits
-resources:
-  memory: 512Mi
-  cpu: 1000m
-
+# Environment configuration
+env:
+  FLEDGE_API_URL: http://localhost:8081/fledge
+  HTTP_PORT: "8083"
+  PYTHONUNBUFFERED: "1"
+  
 # MCP configuration
 mcp:
-  # Tools are defined in the smithery.json file
   toolsPath: fledge_mcp/smithery.json
-  
-  # Initialize method configuration
   initialize:
     serverInfo:
       name: fledge-mcp
@@ -78,6 +37,40 @@ mcp:
           type: string
           description: Fledge API URL
           default: http://localhost:8081/fledge
+
+# Build configuration
+build:
+  dockerfile: Dockerfile
+
+# Runtime configuration
+runtime:
+  # Using the Python websockets package
+  type: websocket
+
+# Environment variables
+env:
+  - name: API_KEY
+    description: API key for secure mode
+    required: false
+  - name: TOOLS_FILE
+    description: Path to tools JSON file
+    required: false
+    default: fledge_mcp/smithery.json
+  - name: LOG_LEVEL
+    description: Logging level
+    required: false
+    default: INFO
+
+# Health check configuration
+healthCheck:
+  interval: 30s
+  timeout: 5s
+  retries: 3
+
+# Resource limits
+resources:
+  memory: 512Mi
+  cpu: 1000m
 
 # Logging configuration
 logging:
