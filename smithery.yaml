@@ -8,15 +8,23 @@ function: main
 
 # Port configuration
 port: 8082
+
+# Health check configuration
 healthCheck:
   port: 8083
   path: /health
+  interval: 30s
+  timeout: 5s
+  retries: 3
 
 # Environment configuration
 env:
   FLEDGE_API_URL: http://localhost:8081/fledge
   HTTP_PORT: "8083"
   PYTHONUNBUFFERED: "1"
+  API_KEY: ""
+  TOOLS_FILE: "fledge_mcp/smithery.json"
+  LOG_LEVEL: "INFO"
   
 # MCP configuration
 mcp:
@@ -44,28 +52,7 @@ build:
 
 # Runtime configuration
 runtime:
-  # Using the Python websockets package
   type: websocket
-
-# Environment variables
-env:
-  - name: API_KEY
-    description: API key for secure mode
-    required: false
-  - name: TOOLS_FILE
-    description: Path to tools JSON file
-    required: false
-    default: fledge_mcp/smithery.json
-  - name: LOG_LEVEL
-    description: Logging level
-    required: false
-    default: INFO
-
-# Health check configuration
-healthCheck:
-  interval: 30s
-  timeout: 5s
-  retries: 3
 
 # Resource limits
 resources:
