@@ -19,4 +19,4 @@ EXPOSE 8082
 EXPOSE 8083
 
 # Run the server
-CMD ["python", "-m", "fledge_mcp.main"] 
+CMD ["python", "-m", "fledge_mcp.main"]
