@@ -137,3 +137,137 @@ For production deployment:
 - Implement more robust authentication (JWT, OAuth)
 - Add rate limiting
 - Set up persistent data storage for subscriptions 
+
+## Deploying on Smithery.ai
+
+The Fledge MCP Server can be deployed on Smithery.ai for enhanced scalability and availability. Follow these steps to deploy:
+
+1. **Prerequisites**
+   - Docker installed on your local machine
+   - A Smithery.ai account
+   - The Smithery CLI tool installed
+
+2. **Build and Deploy**
+   ```bash
+   # Build the Docker image
+   docker build -t fledge-mcp .
+
+   # Deploy to Smithery.ai
+   smithery deploy
+   ```
+
+3. **Configuration**
+   The `smithery.json` file contains the configuration for your deployment:
+   - WebSocket transport on port 8082
+   - Configurable Fledge API URL
+   - Tool definitions and parameters
+   - Timeout settings
+
+4. **Environment Variables**
+   Set the following environment variables in your Smithery.ai dashboard:
+   - `FLEDGE_API_URL`: Your Fledge API endpoint
+   - `API_KEY`: Your secure API key (if using secure mode)
+
+5. **Verification**
+   After deployment, verify your server is running:
+   ```bash
+   smithery status fledge-mcp
+   ```
+
+6. **Monitoring**
+   Monitor your deployment through the Smithery.ai dashboard:
+   - Real-time logs
+   - Performance metrics
+   - Error tracking
+   - Resource usage
+
+7. **Updating**
+   To update your deployment:
+   ```bash
+   # Build new image
+   docker build -t fledge-mcp .
+   
+   # Deploy updates
+   smithery deploy --update
+   ```
+
+## JSON-RPC Protocol Support
+
+The server implements the Model Context Protocol (MCP) using JSON-RPC 2.0 over WebSocket. The following methods are supported:
+
+1. **initialize**
+   ```json
+   {
+       "jsonrpc": "2.0",
+       "method": "initialize",
+       "params": {},
+       "id": "1"
+   }
+   ```
+   Response:
+   ```json
+   {
+       "jsonrpc": "2.0",
+       "result": {
+           "serverInfo": {
+               "name": "fledge-mcp",
+               "version": "1.0.0",
+               "description": "Fledge Model Context Protocol (MCP) Server",
+               "vendor": "Fledge",
+               "capabilities": {
+                   "tools": true,
+                   "streaming": true,
+                   "authentication": "api_key"
+               }
+           },
+           "configSchema": {
+               "type": "object",
+               "properties": {
+                   "fledge_api_url": {
+                       "type": "string",
+                       "description": "Fledge API URL",
+                       "default": "http://localhost:8081/fledge"
+                   }
+               }
+           }
+       },
+       "id": "1"
+   }
+   ```
+
+2. **tools/list**
+   ```json
+   {
+       "jsonrpc": "2.0",
+       "method": "tools/list",
+       "params": {},
+       "id": "2"
+   }
+   ```
+   Response: Returns the list of available tools and their parameters.
+
+3. **tools/call**
+   ```json
+   {
+       "jsonrpc": "2.0",
+       "method": "tools/call",
+       "params": {
+           "name": "get_sensor_data",
+           "parameters": {
+               "sensor_id": "temp1",
+               "limit": 10
+           }
+       },
+       "id": "3"
+   }
+   ```
+
+### Error Codes
+
+The server follows standard JSON-RPC 2.0 error codes:
+
+- -32700: Parse error
+- -32600: Invalid Request
+- -32601: Method not found
+- -32602: Invalid params
+- -32000: Server error 
