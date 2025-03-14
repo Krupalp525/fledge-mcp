@@ -1,0 +1,70 @@
+name: fledge-mcp
+version: 1.0.0
+description: Fledge Model Context Protocol (MCP) Server for Cursor AI integration
+
+# Build configuration
+build:
+  dockerfile: Dockerfile
+  context: .
+
+# Runtime configuration
+runtime:
+  type: websocket
+  port: 8082
+  protocol: mcp
+  timeout: 300
+
+# Environment variables
+env:
+  - name: FLEDGE_API_URL
+    description: Fledge API endpoint URL
+    required: true
+    default: http://localhost:8081/fledge
+  - name: API_KEY
+    description: API key for secure mode
+    required: false
+
+# Health check configuration
+health:
+  path: /health
+  interval: 30s
+  timeout: 5s
+  retries: 3
+
+# Resource limits
+resources:
+  cpu: 1
+  memory: 512Mi
+
+# Scaling configuration
+scaling:
+  min: 1
+  max: 3
+  target_cpu_utilization: 75
+
+# MCP Server configuration
+mcp:
+  initialize:
+    enabled: true
+    configSchema:
+      type: object
+      properties:
+        fledge_api_url:
+          type: string
+          description: Fledge API URL
+          default: http://localhost:8081/fledge
+  tools:
+    source: fledge_mcp/smithery.json
+
+# Logging configuration
+logging:
+  level: INFO
+  format: json
+
+# Security configuration
+security:
+  authentication:
+    type: api_key
+    header: X-API-Key
+  tls:
+    enabled: false 
