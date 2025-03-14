@@ -78,16 +78,3 @@ mcp:
           type: string
           description: Fledge API URL
           default: http://localhost:8081/fledge
-
-# Logging configuration
-logging:
-  level: INFO
-  format: json
-
-# Security configuration
-security:
-  authentication:
-    type: api_key
-    header: X-API-Key
-  tls:
-    enabled: false 
